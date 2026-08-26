@@ -1,0 +1,178 @@
+function PyXtalRandom_310(Ind_No)
+% PyXtalRandom_310 — PyXtal 替代 random_cell_mol 的随机分子晶体生成
+%
+% 架构:
+%   1. pyxtal_random.py 生成分子中心位置（PyXtal random_crystal）
+%   2. Octave 从 MOL 文件读取分子几何，在中心位置放置（随机旋转）
+%   3. newMolCheck 验证分子间距离
+%   4. 失败时回退到 Random_310
+%
+% 与 Random_310 的区别:
+%   - 不调用 random_cell_mol (Fortran 二进制)
+%   - 不调用 symope_310 / GetOrientation
+%   - 分子中心由 PyXtal 生成，分子放置由 Octave 直接完成
+%   - 原子顺序由 MOL 文件保证，与 Random_310 完全一致
+
+global POP_STRUC
+global ORG_STRUC
+global OFF_STRUC
+
+maxAttempts = 30;
+homePath = ORG_STRUC.homePath;
+newSym = 1;
+badSymmetry = 0;
+goodBad = 0;
+count = 1;
+
+while ~goodBad && count <= maxAttempts
+    count = count + 1;
+
+    % === 选择空间群 ===
+    if badSymmetry > 15
+        badSymmetry = 0;
+        newSym = 1;
+    end
+    badSymmetry = badSymmetry + 1;
+
+    if newSym
+        tmp = find(ORG_STRUC.nsym > 0);
+        if isempty(tmp)
+            nsym = 1;
+        else
+            nsym = tmp(ceil(rand * length(tmp)));
+        end
+        newSym = 0;
+    end
+
+    % === 体积 ===
+    if ORG_STRUC.constLattice
+        targetVol = abs(det(ORG_STRUC.lattice));
+    else
+        targetVol = ORG_STRUC.latVolume * sum(ORG_STRUC.numMols);
+    end
+
+    % === 调用 Python ===
+    % 手动拼接字符串（避免 strjoin 依赖）
+    molStr = '';
+    for i = 1:length(ORG_STRUC.numMols)
+        if i > 1, molStr = [molStr ',']; end
+        molStr = [molStr fullfile(homePath, ['MOL_' num2str(i)])];
+    end
+
+    numMolsStr = '';
+    for i = 1:length(ORG_STRUC.numMols)
+        if i > 1, numMolsStr = [numMolsStr ',']; end
+        numMolsStr = [numMolsStr num2str(ORG_STRUC.numMols(i))];
+    end
+
+    seed = floor(rand * 2^31);
+    pythonBin = '/home/feng/.local/anaconda/bin/python3';
+    pyScript = fullfile(homePath, 'FunctionFolder', 'USPEX', '310', 'pyxtal_random.py');
+    outDir = fullfile(homePath, 'CalcFoldTemp');
+    if ~exist(outDir, 'dir'), mkdir(outDir); end
+
+    cmd = sprintf('%s %s --mols %s --numMols %s --volume %.1f --spg %d --seed %d --outdir %s', ...
+        pythonBin, pyScript, molStr, numMolsStr, targetVol, nsym, seed, outDir);
+    [status, ~] = system(cmd);
+
+    if status ~= 0
+        if nsym > 1
+            ORG_STRUC.nsym(nsym) = 0;
+            newSym = 1;
+        end
+        continue;
+    end
+
+    % === 读取数据 ===
+    dataFile = fullfile(outDir, 'pyxtal_data.txt');
+    if ~exist(dataFile, 'file')
+        if nsym > 1
+            ORG_STRUC.nsym(nsym) = 0;
+            newSym = 1;
+        end
+        continue;
+    end
+
+    fid = fopen(dataFile, 'r');
+    if fid == -1, continue; end
+
+    % 第1行: n_mols n_types
+    header = fscanf(fid, '%d %d', 2);
+    nMols = header(1);
+    nTypes = header(2);
+
+    % 第2-4行: lattice (3×3)
+    lattice = zeros(3, 3);
+    for i = 1:3
+        lattice(i, :) = fscanf(fid, '%f %f %f', 3);
+    end
+
+    % 每个分子: type_idx frac_x frac_y frac_z
+    molCenters = zeros(nMols, 3);
+    molTypes = zeros(nMols, 1);
+    for i = 1:nMols
+        vals = fscanf(fid, '%f %f %f %f', 4);
+        molTypes(i) = vals(1) + 1;   % 0-based → 1-based
+        molCenters(i, :) = vals(2:4);
+    end
+    fclose(fid);
+
+    % === 放置分子 ===
+    lat_6 = latConverter(lattice);
+    Molecules = struct('MOLCOORS', {}, 'ZMATRIX', {}, 'ID', {}, 'MOLCENTER', {});
+    MtypeLIST = zeros(1, nMols);
+    molIdx = 0;
+
+    for i = 1:nMols
+        molType = molTypes(i);
+        coords = ORG_STRUC.STDMOL(molType).molecule;
+
+        % 平移到质心
+        coords = bsxfun(@minus, coords, mean(coords));
+
+        % 随机旋转
+        coords = Rotate_rigid_body([0 0 0], [1 0 0], coords, (rand - 0.5) * 2 * pi);
+        coords = Rotate_rigid_body([0 0 0], [0 1 0], coords, (rand - 0.5) * 2 * pi);
+        coords = Rotate_rigid_body([0 0 0], [0 0 1], coords, (rand - 0.5) * 2 * pi);
+
+        % 放置到中心位置
+        center_cart = Frac2Cart(molCenters(i, :), lat_6);
+        coords = bsxfun(@plus, coords, center_cart);
+
+        molIdx = molIdx + 1;
+        Molecules(molIdx).MOLCOORS = coords;
+        Molecules(molIdx).MOLCENTER = center_cart;
+        format = ORG_STRUC.STDMOL(molType).format;
+        Molecules(molIdx).ZMATRIX = NEW_coord2Zmatrix(coords, format);
+        MtypeLIST(molIdx) = molType;
+    end
+
+    % 构建 typesAList 和 numIons
+    [typesAList, ~, numIons] = GetPOP_MOL(ORG_STRUC.numMols);
+
+    % === 距离检查 ===
+    goodBad = newMolCheck(Molecules, lattice, MtypeLIST, ORG_STRUC.minDistMatrice);
+
+    % === 保存结果 ===
+    if goodBad
+        OFF_STRUC.POPULATION(Ind_No).LATTICE = lattice;
+        OFF_STRUC.POPULATION(Ind_No).MOLECULES = Molecules;
+        OFF_STRUC.POPULATION(Ind_No).numIons = numIons;
+        OFF_STRUC.POPULATION(Ind_No).numMols = ORG_STRUC.numMols;
+        OFF_STRUC.POPULATION(Ind_No).MtypeLIST = MtypeLIST;
+        OFF_STRUC.POPULATION(Ind_No).typesAList = typesAList;
+        OFF_STRUC.POPULATION(Ind_No).howCome = 'PyXtalRandom';
+        OFF_STRUC.POPULATION(Ind_No).Parents = [];
+
+        disp(['Structure ' num2str(Ind_No) ' generated by PyXtalRandom (SPG ' ...
+              num2str(nsym) ' ' spaceGroups(nsym) ')']);
+    end
+end
+
+% === 回退 ===
+if ~goodBad
+    disp(['PyXtalRandom failed after ' num2str(maxAttempts) ...
+          ' attempts, falling back to Random_310']);
+    Random_310(Ind_No);
+end
+end

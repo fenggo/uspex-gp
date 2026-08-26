@@ -1,0 +1,7 @@
+nohup octave-cli --no-gui < USPEX.m > log 2>&1 &
+nohup ./run-octave USPEX.m > log 2>&1 &
+or run python script (实验阶段)
+
+nohup ./uspex.py > log 2>&1 &
+
+

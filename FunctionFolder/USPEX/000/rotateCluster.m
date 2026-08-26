@@ -1,0 +1,10 @@
+function [newLat, newCoord] = rotateCluster(coord, lat, alpha, beta, gamma)
+AbsCoord = coord*lat;
+mass_center = zeros(1,3);
+AbsCoord = bsxfun(@minus, AbsCoord, mean(AbsCoord)); 
+Cnz = [cos(gamma) -sin(gamma) 0; sin(gamma) cos(gamma) 0; 0 0 1]; 
+Cnx = [1 0 0; 0 cos(alpha) -sin(alpha); 0 sin(alpha) cos(alpha)]; 
+Cny = [cos(beta) 0 sin(beta); 0 1 0; -sin(beta) 0 cos(beta)];     
+AbsCoord = AbsCoord*Cnz*Cnx*Cny;
+newCoord = bsxfun(@plus, AbsCoord/lat, [0.5, 0.5, 0.5]); 
+[newLat, newCoord] = reduce_Cluster(lat, newCoord);
