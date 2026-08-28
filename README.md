@@ -4,7 +4,7 @@
 
 ## Introduction
 
-USPEX-GP is an open-source computational materials science package designed for crystal structure prediction using evolutionary algorithms and other optimization techniques. It supports various computational codes (VASP, Quantum ESPRESSO, LAMMPS, etc.) and is designed for high-performance computing environments. This repository contains a hybrid codebase with both MATLAB main scripts and Python helper tools/extensions.
+USPEX-GP is an open-source computational materials science package designed for crystal structure prediction using evolutionary algorithms (USPEX-9.4.4). It supports various computational codes (VASP, Quantum ESPRESSO, LAMMPS, etc.) and is designed for high-performance computing environments. This repository contains a hybrid codebase with both MATLAB main scripts and Python helper tools/extensions.
 
 ## Features
 
@@ -21,7 +21,7 @@ USPEX-GP is an open-source computational materials science package designed for 
 
 ### Prerequisites
 
-* **MATLAB** (R2018b or newer recommended) with toolboxes:
+* **OCTAVE** with toolboxes:
   * Optimization Toolbox
   * Statistics and Machine Learning Toolbox
 * **Python** (3.7 or newer)
@@ -63,8 +63,8 @@ USPEX-GP is an open-source computational materials science package designed for 
    Ensure your `calc.exe` (or similar) script is correctly set up to call your chosen DFT/MD code (e.g., VASP, Quantum ESPRESSO) based on the generated structure files.
 
 3. **Launch USPEX**:
-   Run the main USPEX script from MATLAB:
-   ```matlab
+   Run the main USPEX script from OCTAVE:
+   ```octave
    >> USPEX
    ```
    Or use the Python wrapper if available:
