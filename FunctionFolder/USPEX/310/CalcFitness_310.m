@@ -292,10 +292,26 @@ if POP_STRUC.generation > 1
                     % read pred results, update fitness (skip residual > 10)
                     if exist(pred_log, 'file')
                         % density_predict.log 是空格分隔，非 CSV
-                        pred_raw = importdata(pred_log);
-                        pred_data = pred_raw.data;  % numeric matrix
-                        pred_id_col = pred_data(:, 1);
-                        pred_density_col = pred_data(:, 5);
+                        % 注意: Octave 的 importdata 对带 '#' 头的文件会返回 cell,
+                        % 导致 pred_raw.data 报 "cell cannot be indexed with ."
+                        % 这里改用 textscan 直接读取数值列
+                        fid = fopen(pred_log, 'r');
+                        if fid == -1
+                            pred_data = [];
+                        else
+                            pred_c = textscan(fid, '%f %f %f %f %f %f %f %f', ...
+                                              'HeaderLines', 1, 'CollectOutput', true);
+                            fclose(fid);
+                            pred_data = pred_c{1};
+                        end
+                        if isempty(pred_data)
+                            warning('CalcFitness_310: no numeric rows in %s', pred_log);
+                            pred_id_col = [];
+                            pred_density_col = [];
+                        else
+                            pred_id_col = pred_data(:, 1);
+                            pred_density_col = pred_data(:, 5);
+                        end
 
                         updated_count = 0;
                         skipped_count = 0;
