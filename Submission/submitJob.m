@@ -21,6 +21,9 @@ elseif ORG_STRUC.platform == 0 %nonParallel
        [a,b]=unix([ORG_STRUC.commandExecutable{Step} ' --o=1']);
     elseif strfind(ORG_STRUC.commandExecutable{Step},'gpcsp') 
        [a,b]=unix([ORG_STRUC.commandExecutable{Step}  ' --r=' POP_STRUC.resFolder]); %%' --i=' num2str(count)
+    elseif strfind(ORG_STRUC.commandExecutable{Step},'uspexkit gp')
+       % 直接把当前结构的全局编号 bodyCount+1 下发给 Python，无需读 Individuals 文件
+       [a,b]=unix([ORG_STRUC.commandExecutable{Step}  ' --id=' num2str(POP_STRUC.bodyCount + 1)]);    
     else
        [a,b]=unix(ORG_STRUC.commandExecutable{Step});
     end
