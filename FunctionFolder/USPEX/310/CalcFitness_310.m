@@ -284,10 +284,15 @@ if POP_STRUC.generation > 1
                     if exist(pred_log, 'file')
                         delete(pred_log);
                     end
+                    cmd = sprintf('cd %s && cp *.pkl ../CalcFold1/ && rm gpr_density.pkl gpr_energy.pkl rfr.pkl && cd ..', ...
+                                  dat_dir);
+                    system(cmd);
                     cmd = sprintf('cd %s && uspexkit pred --step=100 --ncpu=%d --den=0.0 --ids=''%s'' --dat=%s', ...
                                   ORG_STRUC.resFolder, ncpu, pred_ids_str, dat_dir);
                     fprintf('  Running: %s\n', cmd);
                     system(cmd);
+
+            
 
                     % read pred results, update fitness (skip residual > 10)
                     if exist(pred_log, 'file')
