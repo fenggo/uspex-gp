@@ -4,7 +4,7 @@
 
 ## Introduction
 
-USPEX-GP is an open-source computational materials science package designed for crystal structure prediction using evolutionary algorithms (USPEX-9.4.4). It supports various computational codes (VASP, Quantum ESPRESSO, LAMMPS, etc.) and is designed for high-performance computing environments. This repository contains a hybrid codebase with both MATLAB main scripts and Python helper tools/extensions.
+USPEX-GP is an open-source computational materials science package designed for crystal structure prediction using evolutionary algorithms (based on USPEX-9.4.4). It supports various computational codes (VASP, Quantum ESPRESSO, LAMMPS, etc.) and is designed for high-performance computing environments. This repository contains a hybrid codebase with both MATLAB main scripts and Python helper tools/extensions.
 
 ## Features
 
@@ -15,7 +15,7 @@ USPEX-GP is an open-source computational materials science package designed for 
 * **Molecule & Surface Predictions**: Specialized modes for molecular crystals and surface structures.
 * **Metadynamics**: Enhanced sampling capabilities for complex energy landscapes.
 * **Multi-Code Support**: Interfaces with popular DFT and MD codes.
-* **Hybrid MATLAB/Python Architecture**: Combines MATLAB's numerical power with Python's flexibility.
+* **Hybrid MATLAB/Python Architecture**: Combines OCTAVE's numerical power with Python's flexibility.
 
 ## Installation
 
@@ -27,7 +27,7 @@ USPEX-GP is an open-source computational materials science package designed for 
 * **Python** (3.7 or newer)
 * **Cython** (for compiling core extensions)
 * **Numerical Python (NumPy)**
-* **C Compiler** (e.g., GCC, MinGW) compatible with your Python/MATLAB setup.
+* **C Compiler** (e.g., GCC, MinGW) compatible with your Python/OCTAVE setup.
 
 ### Steps
 
@@ -67,10 +67,6 @@ USPEX-GP is an open-source computational materials science package designed for 
    ```octave
    >> USPEX
    ```
-   Or use the Python wrapper if available:
-   ```bash
-   python run_uspex.py
-   ```
 
 4. **Monitor & Analyze**:
    Check generation folders (`generation_X`) for output files. Use the visualization scripts in `FunctionFolder/USPEX/` to analyze results.
@@ -98,8 +94,8 @@ This project is licensed under the [LICENSE NAME] License - see the [LICENSE](LI
 ## Contact
 
 * **Author**: Fenggo
-* **Gitee Profile**: [https://gitee.com/fenggo](https://gitee.com/fenggo)
-* **Project Home**: [https://gitee.com/fenggo/uspex-gp](https://gitee.com/fenggo/uspex-gp)
+* **Github Profile**: [https://github.com/fenggo](https://github.com/fenggo)
+* **Project Home**: [https://github.com/fenggo/uspex-gp](https://github.com/fenggo/uspex-gp)
 
 ---
 *Note: This README was generated based on the repository structure. Please verify specific details with the code comments and documentation within the repository.*
