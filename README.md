@@ -40,8 +40,6 @@ USPEX-GP is an open-source computational materials science package designed for 
 2. **Setup Python Environment**:
    It is recommended to use a virtual environment.
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install numpy cython
    ```
 
@@ -60,7 +58,7 @@ USPEX-GP is an open-source computational materials science package designed for 
    Modify the `INPUT.txt` file (or equivalent configuration) in your working directory. This file controls all USPEX parameters (population size, number of generations, fitness function, etc.).
 
 2. **Select Fitness Calculator**:
-   Ensure your `calc.exe` (or similar) script is correctly set up to call your chosen DFT/MD code (e.g., VASP, Quantum ESPRESSO) based on the generated structure files.
+   Ensure your `calculator` (or similar) script is correctly set up to call your chosen DFT/MD code (e.g., SIESTA, GULP, VASP, Quantum ESPRESSO) based on the generated structure files.
 
 3. **Launch USPEX**:
    Run the main USPEX script from OCTAVE:
