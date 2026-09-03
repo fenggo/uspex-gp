@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-汇总所有 resultsN 文件夹中 density.log 的 DFT 计算结果
+汇总所有 resultsN 文件夹的 DFT 计算结果
+优先读取 density.log; 若某文件夹没有 density.log, 则遍历其纯数字命名的子
+文件夹中的 siesta.traj, 用 ase 获取能量 (atoms.get_potential_energy()) 并参考
+density.py 计算密度, 按其它 density.log 的格式生成一份 density.log, 再读取。
 散点图: Density vs Energy, 按文件夹着色, 标注结构ID
 """
 import os
@@ -10,6 +13,7 @@ import glob
 import argparse
 import sys
 import numpy as np
+from ase.io import read
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -33,7 +37,50 @@ def num_suffix(name):
     return int(m.group(1)) if m else 0
 
 
-# ── 收集所有含 density.log 的 resultsN 文件夹（按数字后缀排序）──
+# ── 密度 / 能量过滤阈值 (density.log 与 siesta.traj 两路共用) ──
+MIN_DENSITY = 1.84
+MAX_ENERGY = -14613.0
+
+
+def keep(density, energy):
+    """过滤低密度或未收敛 (能量过正) 的结构"""
+    return density > MIN_DENSITY and energy < MAX_ENERGY
+
+
+def generate_density_log(folder):
+    """依据纯数字命名子文件夹中的 siesta.traj, 按其它 density.log 的格式生成 density.log.
+
+    返回写入的条目数; 若没有找到任何 siesta.traj 则返回 0 且不创建文件.
+    """
+    rows = []
+    for sub in sorted(glob.glob(os.path.join(folder, '[0-9]*'))):
+        if not os.path.isdir(sub) or not os.path.basename(sub).isdigit():
+            continue
+        traj = os.path.join(sub, 'siesta.traj')
+        if not os.path.isfile(traj):
+            continue
+        try:
+            atoms = read(traj, index=-1)
+            energy = atoms.get_potential_energy()
+            volume = atoms.get_volume()
+            masses = np.sum(atoms.get_masses())
+            density = masses / volume / 0.602214129  # 参考 density.py
+            rows.append((int(os.path.basename(sub)), density, energy))
+        except Exception as ex:
+            print(f'[skip] {traj}: {ex}', file=sys.stderr)
+
+    if not rows:
+        return 0
+
+    fname = os.path.join(folder, 'density.log')
+    with open(fname, 'w') as f:
+        f.write('# Crystal_id Density Energy\n')
+        for cid, density, energy in rows:
+            f.write(f'{cid:5d}  {density:9.6f} {energy:15.8f}\n')
+    return len(rows)
+
+
+# ── 收集所有 resultsN 文件夹（按数字后缀排序）──
 pat = re.compile(re.escape(res) + r'[-_]?(\d+)$')
 folders = []
 for d in glob.glob(os.path.join(base, res + '*')):
@@ -47,18 +94,25 @@ all_d, all_e, all_label = [], [], []
 
 for folder in folders:
     fname = os.path.join(folder, 'density.log')
-    if not os.path.isfile(fname):
-        continue
     name = os.path.basename(folder)
+    if not os.path.isfile(fname):
+        n = generate_density_log(folder)
+        if n:
+            print(f'[generate] {name}: wrote {n} entries to density.log', file=sys.stderr)
+        else:
+            print(f'[skip] {name}: no siesta.traj found', file=sys.stderr)
+            continue
     ids, ds, es = [], [], []
     with open(fname) as f:
         next(f)  # skip header
         for line in f:
             p = line.split()
-            if len(p) >= 3 and float(p[1]) > 0:  # 过滤密度 ≤ 0 的结构
-                ids.append(int(p[0]))
-                ds.append(float(p[1]))
-                es.append(float(p[2]))
+            if len(p) >= 3:
+                density, energy = float(p[1]), float(p[2])
+                if keep(density, energy):
+                    ids.append(int(p[0]))
+                    ds.append(density)
+                    es.append(energy)
     if ids:
         data[name] = (ids, ds, es)
         all_d.extend(ds)
