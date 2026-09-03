@@ -5,6 +5,7 @@
 优先读取 density.log; 若某文件夹没有 density.log, 则遍历其纯数字命名的子
 文件夹中的 siesta.traj, 用 ase 获取能量 (atoms.get_potential_energy()) 并参考
 density.py 计算密度, 按其它 density.log 的格式生成一份 density.log, 再读取。
+密度与能量都接近 (重复结构) 的点会被忽略。
 散点图: Density vs Energy, 按文件夹着色, 标注结构ID
 """
 import os
@@ -24,11 +25,21 @@ from scipy.stats import gaussian_kde
 parser = argparse.ArgumentParser(description='plot the dft results: ./plot_dft.py --res=results')
 parser.add_argument('--res', default='results', type=str, help='results folder prefix')
 parser.add_argument('--a', default=0, type=int, help='auto (keep for back-compat)')
+parser.add_argument('--dtol', default=1e-3, type=float, help='density tolerance for dedup (g/cm3)')
+parser.add_argument('--etol', default=1e-3, type=float, help='energy tolerance for dedup (eV)')
 args = parser.parse_args(sys.argv[1:])
 res  = args.res
 
 
 base = os.path.dirname(os.path.abspath(__file__))
+
+# ── 密度 / 能量过滤阈值 (density.log 与 siesta.traj 两路共用) ──
+MIN_DENSITY = 1.84
+MAX_ENERGY = -14613.0
+
+# ── 去重阈值: 密度与能量都落在此容差内则视为重复结构并忽略 ──
+DENSITY_TOL = args.dtol
+ENERGY_TOL = args.etol
 
 
 def num_suffix(name):
@@ -37,14 +48,17 @@ def num_suffix(name):
     return int(m.group(1)) if m else 0
 
 
-# ── 密度 / 能量过滤阈值 (density.log 与 siesta.traj 两路共用) ──
-MIN_DENSITY = 1.84
-MAX_ENERGY = -14613.0
-
-
 def keep(density, energy):
     """过滤低密度或未收敛 (能量过正) 的结构"""
     return density > MIN_DENSITY and energy < MAX_ENERGY
+
+
+def is_close(density, energy, seen):
+    """判断 (density, energy) 是否与已保留点足够接近 (重复结构)"""
+    for sd, se in seen:
+        if abs(density - sd) <= DENSITY_TOL and abs(energy - se) <= ENERGY_TOL:
+            return True
+    return False
 
 
 def generate_density_log(folder):
@@ -91,6 +105,8 @@ folders = [d for _, d in sorted(folders)]
 
 data = {}  # folder_name -> (ids, densities, energies)
 all_d, all_e, all_label = [], [], []
+seen = []   # 已保留的 (density, energy), 用于去重
+n_dup = 0   # 被忽略的重复点数量
 
 for folder in folders:
     fname = os.path.join(folder, 'density.log')
@@ -109,10 +125,15 @@ for folder in folders:
             p = line.split()
             if len(p) >= 3:
                 density, energy = float(p[1]), float(p[2])
-                if keep(density, energy):
-                    ids.append(int(p[0]))
-                    ds.append(density)
-                    es.append(energy)
+                if not keep(density, energy):
+                    continue
+                if is_close(density, energy, seen):
+                    n_dup += 1
+                    continue
+                seen.append((density, energy))
+                ids.append(int(p[0]))
+                ds.append(density)
+                es.append(energy)
     if ids:
         data[name] = (ids, ds, es)
         all_d.extend(ds)
@@ -123,7 +144,7 @@ all_d = np.array(all_d)
 all_e = np.array(all_e)
 all_label = np.array(all_label)
 
-print(f'\nTotal DFT points: {len(all_d)} from {len(data)} folders')
+print(f'\nTotal DFT points: {len(all_d)} from {len(data)} folders ({n_dup} duplicates ignored)')
 print(f'{"Folder":<16} {"Crystal_ID":>10} {"Density":>10} {"Energy":>16}')
 print('-' * 56)
 for name in sorted(data, key=num_suffix):
@@ -182,7 +203,7 @@ ax_right.fill_between(kde_e(xe), xe, alpha=0.25, color='coral')
 ax_right.set_ylim(yl); ax_right.set_xticks([]); ax_right.set_yticks([])
 for sp in ['top','right','bottom']: ax_right.spines[sp].set_visible(False)
 
-ax.legend(loc='lower left', fontsize=8, framealpha=0.9, ncol=2)
+# ax.legend(loc='lower left', fontsize=8, framealpha=0.9, ncol=2)
 ax.grid(True, alpha=0.15)
 
 # 信息框
