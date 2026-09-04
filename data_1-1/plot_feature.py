@@ -157,7 +157,7 @@ def _plot_scatter(density, y, idx, color, marker, ylabel, outfile,
                 fontsize=13, fontweight='bold', va='top', ha='left')
 
     ax.set_ylabel(ylabel)
-    ax.set_xlabel(r'Density (g\u2009cm$^{-3}$)')
+    ax.set_xlabel(r'Density (g/cm$^{-3}$)')
 
     # Scatter: hollow markers for over-plotting clarity.
     ax.scatter(density, y, s=28, marker=marker, alpha=0.80,
