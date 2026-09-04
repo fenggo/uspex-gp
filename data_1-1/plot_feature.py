@@ -142,6 +142,7 @@ def _annotate_outliers(ax, x, y, idx, color,
             ax.annotate(f'ID:{ii}', (xi, yi), xytext=(0, 6),
                         textcoords='offset points', ha='center',
                         fontsize=6.5, color=color)
+            print(f'ID:{ii}', (xi, yi))
 
 
 def _plot_scatter(density, y, idx, color, marker, ylabel, outfile,
@@ -184,15 +185,17 @@ def main():
     density, etot, ehb, idx = _read_data()
     d = 1.92
     h = -14612.3
+    print('Panel 1: total energy vs density')
     # Panel 1: total energy vs density.
     _plot_scatter(density, etot, idx, color=C_GREEN, marker='s',
                   ylabel=FEATURES[1], outfile='Etotal.pdf',
                   panel_label='(a)',D_ANNOT_THRESH = d, H_ANNOT_THRESH = h)
-    h = -14612.3
+    h = -2.75
+    print('Panel 2: H-bond energy vs density')
     # Panel 2: H-bond energy vs density.
     _plot_scatter(density, ehb, idx, color=C_BLUE, marker='o',
                   ylabel=r'$E_{\mathrm{H-bond}}$ (eV)', outfile='Hbond.pdf',
-                  panel_label='(b)')
+                  panel_label='(b)',D_ANNOT_THRESH = d, H_ANNOT_THRESH = h)
 
 
 if __name__ == '__main__':
