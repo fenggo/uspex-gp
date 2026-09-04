@@ -87,15 +87,12 @@ FEATURES = ['none', 'E$_{\\mathrm{total}}$', 'E$_{\\mathrm{angle}}$',
 
 # Annotations are placed for the outliers near the upper density tail or for
 # unusually low H-bond energies (the hand-tuned value removes a stray point).
-D_ANNOT_THRESH = 1.864
-H_ANNOT_THRESH = -0.340
-
 
 def _read_data():
     """Load feature.csv and return the filtered sample, original indexing."""
     data = np.loadtxt('feature.csv', delimiter=',', skiprows=1)
     etot = data[:, 1]
-    ehb  = data[:, 6] + data[:, 7] + data[:, 8]
+    ehb = data[:, 6] + data[:, 7] + data[:, 8]
     density = data[:, -1]
 
     idx = np.where((density > 1.75) &
@@ -137,7 +134,8 @@ def _add_inset(ax, values, color, xlabel, ylabel='Density'):
     return axins
 
 
-def _annotate_outliers(ax, x, y, idx, color):
+def _annotate_outliers(ax, x, y, idx, color, 
+                       D_ANNOT_THRESH = 1.91, H_ANNOT_THRESH = -14612.1):
     """Label the structural outliers with their row ID."""
     for xi, yi, ii in zip(x, y, idx):
         if xi > D_ANNOT_THRESH or (yi < H_ANNOT_THRESH and ii != 495):
@@ -183,12 +181,13 @@ def _plot_scatter(density, y, idx, color, marker, ylabel, outfile,
 
 def main():
     density, etot, ehb, idx = _read_data()
-
+    D_ANNOT_THRESH = 1.91
+    H_ANNOT_THRESH = -14612.1
     # Panel 1: total energy vs density.
     _plot_scatter(density, etot, idx, color=C_GREEN, marker='s',
                   ylabel=FEATURES[1], outfile='Etotal.pdf',
                   panel_label='(a)')
-
+    H_ANNOT_THRESH = -14612.1
     # Panel 2: H-bond energy vs density.
     _plot_scatter(density, ehb, idx, color=C_BLUE, marker='o',
                   ylabel=r'$E_{\mathrm{H-bond}}$ (eV)', outfile='Hbond.pdf',
@@ -197,3 +196,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+    
