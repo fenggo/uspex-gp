@@ -162,7 +162,8 @@ def _plot_scatter(density, y, idx, color, marker, ylabel, outfile,
                facecolors='none', edgecolors=color, label=ylabel,
                linewidths=0.8, zorder=3)
 
-    _annotate_outliers(ax, density, y, idx, color=C_RED,D_ANNOT_THRESH = 1.91, H_ANNOT_THRESH = -14612.1)
+    _annotate_outliers(ax, density, y, idx, color=C_RED,
+                       D_ANNOT_THRESH = D_ANNOT_THRESH, H_ANNOT_THRESH = H_ANNOT_THRESH)
 
     # Trend line: true OLS fit, no offset.
     x_fit, y_fit, r_value, slope, intercept, std_err = _fit_trend(density, y)
