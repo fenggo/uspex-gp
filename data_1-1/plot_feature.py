@@ -145,7 +145,7 @@ def _annotate_outliers(ax, x, y, idx, color,
 
 
 def _plot_scatter(density, y, idx, color, marker, ylabel, outfile,
-                  panel_label=''):
+                  panel_label='',D_ANNOT_THRESH = 1.91, H_ANNOT_THRESH = -14612.1):
     """Render one density-vs-feature panel and save the figure."""
     fig, ax = plt.subplots(figsize=(5.5, 4.2), constrained_layout=True)
 
@@ -162,7 +162,7 @@ def _plot_scatter(density, y, idx, color, marker, ylabel, outfile,
                facecolors='none', edgecolors=color, label=ylabel,
                linewidths=0.8, zorder=3)
 
-    _annotate_outliers(ax, density, y, idx, color=C_RED)
+    _annotate_outliers(ax, density, y, idx, color=C_RED,D_ANNOT_THRESH = 1.91, H_ANNOT_THRESH = -14612.1)
 
     # Trend line: true OLS fit, no offset.
     x_fit, y_fit, r_value, slope, intercept, std_err = _fit_trend(density, y)
@@ -181,13 +181,13 @@ def _plot_scatter(density, y, idx, color, marker, ylabel, outfile,
 
 def main():
     density, etot, ehb, idx = _read_data()
-    D_ANNOT_THRESH = 1.91
-    H_ANNOT_THRESH = -14612.1
+    d = 1.92
+    h = -14612.3
     # Panel 1: total energy vs density.
     _plot_scatter(density, etot, idx, color=C_GREEN, marker='s',
                   ylabel=FEATURES[1], outfile='Etotal.pdf',
-                  panel_label='(a)')
-    H_ANNOT_THRESH = -14612.1
+                  panel_label='(a)',D_ANNOT_THRESH = d, H_ANNOT_THRESH = h)
+    h = -14612.3
     # Panel 2: H-bond energy vs density.
     _plot_scatter(density, ehb, idx, color=C_BLUE, marker='o',
                   ylabel=r'$E_{\mathrm{H-bond}}$ (eV)', outfile='Hbond.pdf',
