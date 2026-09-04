@@ -118,7 +118,7 @@ if POP_STRUC.generation > 1
         ncpu = 8;          % default
         dat_dir = 'data';   % default
         u_threshold = 0.04; % default
-        top_k = 3;          % number of crystals to select per generation
+        top_k = 1;          % number of crystals to select per generation, default=1
         for ic = 1:length(ORG_STRUC.commandExecutable)
             cmd_str = ORG_STRUC.commandExecutable{ic};
             if ~isempty(strfind(cmd_str, 'uspexkit gp'))
@@ -142,6 +142,13 @@ if POP_STRUC.generation > 1
                     sp = find(rest == ' ', 1);
                     if isempty(sp), u_threshold = str2num(rest);
                     else, u_threshold = str2num(rest(1:sp-1)); end
+                end
+                k_pos = strfind(cmd_str, '--k=');
+                if ~isempty(k_pos)
+                    rest = cmd_str(k_pos+4:end);
+                    sp = find(rest == ' ', 1);
+                    if isempty(sp), top_k = str2num(rest);
+                    else, top_k = str2num(rest(1:sp-1)); end
                 end
                 break;
             end
