@@ -133,12 +133,14 @@ def _add_inset(ax, values, color, xlabel, ylabel='Density'):
                  handlelength=1.0, handletextpad=0.4)
     return axins
 
+SHOW_ID  = [43]
+NOT_SHOW = [537,438]
 
 def _annotate_outliers(ax, x, y, idx, color, 
                        D_ANNOT_THRESH = 1.91, H_ANNOT_THRESH = -14612.1):
     """Label the structural outliers with their row ID."""
     for xi, yi, ii in zip(x, y, idx):
-        if xi > D_ANNOT_THRESH or (yi < H_ANNOT_THRESH and ii != 495):
+        if (xi > D_ANNOT_THRESH or (yi < H_ANNOT_THRESH and ii != 495) or (ii in SHOW_ID)) and ii not in NOT_SHOW:
             ax.annotate(f'ID:{ii}', (xi, yi), xytext=(0, 6),
                         textcoords='offset points', ha='center',
                         fontsize=6.5, color=color)
@@ -183,18 +185,18 @@ def _plot_scatter(density, y, idx, color, marker, ylabel, outfile,
 
 def main():
     density, etot, ehb, idx = _read_data()
-    d = 1.92
+    d = 1.91
     h = -14612.3
     print('Panel 1: total energy vs density')
     # Panel 1: total energy vs density.
     _plot_scatter(density, etot, idx, color=C_GREEN, marker='s',
-                  ylabel=FEATURES[1], outfile='Etotal.pdf',
+                  ylabel=FEATURES[1], outfile='Etotal.svg',
                   panel_label='(a)',D_ANNOT_THRESH = d, H_ANNOT_THRESH = h)
-    h = -2.75
+    h = -2.7
     print('Panel 2: H-bond energy vs density')
     # Panel 2: H-bond energy vs density.
     _plot_scatter(density, ehb, idx, color=C_BLUE, marker='o',
-                  ylabel=r'$E_{\mathrm{H-bond}}$ (eV)', outfile='Hbond.pdf',
+                  ylabel=r'$E_{\mathrm{H-bond}}$ (eV)', outfile='Hbond.svg',
                   panel_label='(b)',D_ANNOT_THRESH = d, H_ANNOT_THRESH = h)
 
 
