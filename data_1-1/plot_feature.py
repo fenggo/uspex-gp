@@ -95,7 +95,7 @@ def _read_data():
     """Load feature.csv and return the filtered sample, original indexing."""
     data = np.loadtxt('feature.csv', delimiter=',', skiprows=1)
     etot = data[:, 1]
-    ehb = data[:, 5]
+    ehb  = data[:, 6] + data[:, 7] + data[:, 8]
     density = data[:, -1]
 
     idx = np.where((density > 1.75) &
