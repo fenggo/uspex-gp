@@ -29,8 +29,8 @@ rN = order(ranking(N));
 
 if rN > r1
     % ---- 向量化: 一次性计算所有 koef ----
-    rI_all = order(ranking);                     % N×1
-    koef_all = (rN - rI_all) / (rN - r1);        % N×1
+    rI_all = order(ranking);                     % 1×N row vector
+    koef_all = ((rN - rI_all) / (rN - r1))';     % N×1 column vector
 
     % ---- 一次性生成所有随机位移 (N×3) ----
     deviat_dist = randn(N, 3) .* (max_sigma * koef_all);
