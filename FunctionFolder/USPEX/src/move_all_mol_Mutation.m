@@ -36,7 +36,7 @@ if rN > r1
     deviat_dist = randn(N, 3) .* (max_sigma * koef_all);
 
     % ---- 转为分数坐标位移 (广播除法) ----
-    deviat_frac = deviat_dist ./ temp_potLat(1:3);
+    deviat_frac = deviat_dist ./ temp_potLat(1:3)';
 
     % ---- 一次性应用位移 ----
     new_Coord(ranking, :) = new_Coord(ranking, :) + deviat_frac;
