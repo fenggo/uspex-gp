@@ -14,7 +14,7 @@ import glob
 import argparse
 import sys
 import numpy as np
-from ase.io import read
+from ase.io import read, write
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -42,16 +42,14 @@ DENSITY_TOL = args.dtol
 ENERGY_TOL = args.etol
 
 
-def num_suffix(name):
-    """从 'results12' / 'results-12' 中提取数字后缀，用于排序"""
-    m = re.search(r'(\d+)$', name)
-    return int(m.group(1)) if m else 0
-
-
 def keep(density, energy):
     """过滤低密度或未收敛 (能量过正) 的结构"""
     return density > MIN_DENSITY and energy < MAX_ENERGY
 
+def num_suffix(name):
+    """从 'results12' / 'results-12' 中提取数字后缀，用于排序"""
+    m = re.search(r'(\d+)$', name)
+    return int(m.group(1)) if m else 0
 
 def is_close(density, energy, seen):
     """判断 (density, energy) 是否与已保留点足够接近 (重复结构)"""
@@ -59,7 +57,6 @@ def is_close(density, energy, seen):
         if abs(density - sd) <= DENSITY_TOL and abs(energy - se) <= ENERGY_TOL:
             return True
     return False
-
 
 def generate_density_log(folder):
     """依据纯数字命名子文件夹中的 siesta.traj, 按其它 density.log 的格式生成 density.log.
@@ -102,6 +99,7 @@ for d in glob.glob(os.path.join(base, res + '*')):
     if m:
         folders.append((int(m.group(1)), d))
 folders = [d for _, d in sorted(folders)]
+folder_paths = {os.path.basename(d): d for d in folders}
 
 data = {}  # folder_name -> (ids, densities, energies)
 all_d, all_e, all_label = [], [], []
@@ -154,6 +152,50 @@ for name in sorted(data, key=num_suffix):
 print('-' * 56)
 print(f'{"Total":<16} {len(all_d):>10}\n')
 
+folder_names = sorted(data.keys(), key=num_suffix)
+
+# ── 保存每个绘图点对应的结构到 structures.traj ──
+def read_last_or_none(path):
+    """读取轨迹的最后一帧; 读取失败时返回 None 而不是终止整个脚本."""
+    try:
+        return read(path, index=-1)
+    except Exception as ex:
+        print(f'[warn] cannot read {path}: {ex}', file=sys.stderr)
+        return None
+
+
+if os.path.isfile('structures.traj'):
+    os.remove('structures.traj')
+
+n_saved = 0
+n_missing = 0
+for name in folder_names:
+    ids = data[name][0]
+    folder = folder_paths[name]
+    for cid in ids:
+        sub = os.path.join(folder, str(cid))
+        atoms = None
+
+        id_traj = os.path.join(sub, f'id_{cid}.traj')
+        if os.path.isfile(id_traj):
+            atoms = read_last_or_none(id_traj)
+
+        if atoms is None:
+            siesta_traj = os.path.join(sub, 'siesta.traj')
+            if os.path.isfile(siesta_traj):
+                atoms = read_last_or_none(siesta_traj)
+
+        if atoms is None:
+            print(f'[skip structure] {name}/{cid}: no readable id_*.traj or siesta.traj',
+                  file=sys.stderr)
+            n_missing += 1
+            continue
+
+        write('structures.traj', atoms, append=True)
+        n_saved += 1
+
+print(f'\nSaved {n_saved} structures to structures.traj ({n_missing} missing)')
+
 # ── 绘图 ──
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.set_xlabel(r'$Density$ ($g/cm^3$)', fontsize=13)
@@ -163,7 +205,6 @@ ax.set_ylabel(r'$Relative\ Energy$ ($eV$)', fontsize=13)
 # 每个文件夹用不同颜色
 cmap = plt.cm.tab10
 n_folders = len(data)
-folder_names = sorted(data.keys(), key=num_suffix)
 
 for i, name in enumerate(folder_names):
     ids, ds, es = data[name]
@@ -179,7 +220,7 @@ for i, name in enumerate(folder_names):
 # 标注最优结构
 best_idx = np.argmin(all_e)
 ax.scatter(all_d[best_idx], all_e[best_idx], marker='*', s=300,
-           facecolors='none', edgecolors='red', linewidths=2,
+           facecolors='none', edgecolors='red', linewidths=2, 
            zorder=5, label=f'Best (D={all_d[best_idx]:.4f})')
 
 # ── 边际 KDE ──
