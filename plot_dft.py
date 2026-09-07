@@ -15,6 +15,7 @@ import argparse
 import sys
 import numpy as np
 from ase.io import read, write
+from ase.io.trajectory import TrajectoryWriter
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -164,11 +165,12 @@ def read_last_or_none(path):
         return None
 
 
-if os.path.isfile('structures.traj'):
-    os.remove('structures.traj')
+# if os.path.isfile('structures.traj'):
+#     os.remove('structures.traj')
 
 n_saved = 0
 n_missing = 0
+traj    = TrajectoryWriter('structures.traj',mode='w')
 for name in folder_names:
     ids = data[name][0]
     folder = folder_paths[name]
@@ -191,9 +193,11 @@ for name in folder_names:
             n_missing += 1
             continue
 
-        write('structures.traj', atoms, append=True)
+        # write('structures.traj', atoms, append=True)
+        traj.write(atoms=atoms)
+        
         n_saved += 1
-
+traj.close()
 print(f'\nSaved {n_saved} structures to structures.traj ({n_missing} missing)')
 
 # ── 绘图 ──
