@@ -119,6 +119,7 @@ if POP_STRUC.generation > 1
         dat_dir = 'data';   % default
         u_threshold = 0.04; % default
         top_k = 1;          % number of crystals to select per generation, default=1
+        select_mode = 'ei'; % selection mode: ei, random, uncertainty
         for ic = 1:length(ORG_STRUC.commandExecutable)
             cmd_str = ORG_STRUC.commandExecutable{ic};
             if ~isempty(strfind(cmd_str, 'uspexkit gp'))
@@ -149,6 +150,13 @@ if POP_STRUC.generation > 1
                     sp = find(rest == ' ', 1);
                     if isempty(sp), top_k = str2num(rest);
                     else, top_k = str2num(rest(1:sp-1)); end
+                end
+                m_pos = strfind(cmd_str, '--mode=');
+                if ~isempty(m_pos)
+                    rest = cmd_str(m_pos+7:end);
+                    sp = find(rest == ' ', 1);
+                    if isempty(sp), select_mode = rest;
+                    else, select_mode = rest(1:sp-1); end
                 end
                 break;
             end
@@ -226,9 +234,22 @@ if POP_STRUC.generation > 1
                 end
             end
 
-            % Step 2: sort by EI descending, select top-K with uncertainty > threshold
-            [~, sort_idx] = sort(ei_list, 'descend');
+            % Step 2: select top-K based on mode
             n_sel = min(top_k, length(ei_list));
+            if strcmp(select_mode, 'ei')
+                [~, sort_idx] = sort(ei_list, 'descend');
+                mode_label = 'EI';
+            elseif strcmp(select_mode, 'uncertainty')
+                [~, sort_idx] = sort(ei_uncert_list, 'descend');
+                mode_label = 'uncertainty';
+            elseif strcmp(select_mode, 'random')
+                sort_idx = randperm(length(ei_list))';
+                mode_label = 'random';
+            else
+                fprintf('  Unknown select_mode "%s", falling back to EI\n', select_mode);
+                [~, sort_idx] = sort(ei_list, 'descend');
+                mode_label = 'EI';
+            end
             selected_crystals = ei_crystal_list(sort_idx(1:n_sel));
             selected_uncerts = ei_uncert_list(sort_idx(1:n_sel));
             selected_den_gps = ei_den_gp_list(sort_idx(1:n_sel));
@@ -243,8 +264,8 @@ if POP_STRUC.generation > 1
 
             n_dft = length(selected_crystals);
             if n_dft > 0
-                fprintf('EI top-%d selection: %d/%d crystals above threshold (%.4f)\n', ...
-                    top_k, n_dft, n_sel, u_threshold);
+                fprintf('%s top-%d selection: %d/%d crystals above threshold (%.4f)\n', ...
+                    mode_label, top_k, n_dft, n_sel, u_threshold);
                 for s = 1:n_dft
                     fprintf('  %d: crystal %d  EI=%.6f  den_gp=%.4f  sigma=%.4f  f_best=%.4f\n', ...
                         s, selected_crystals(s), selected_eis(s), ...
