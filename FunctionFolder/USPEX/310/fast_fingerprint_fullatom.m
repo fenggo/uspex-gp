@@ -62,7 +62,7 @@ for i = 1:size(COORDINATES, 1)
 end
 fclose(fid);
 
-% 写 Intra_map 为 .mat 文件（-mat7-binary 保证 scipy 可读）
+% 写 Intra_map 为 .mat 文件（-mat7-binary 保证 scipy 可读）如报错，改为 -mat-binary
 save('-mat7-binary', tmpIntraMat, 'Intra_map');
 
 % 构建 Python 命令
