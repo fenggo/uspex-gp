@@ -54,6 +54,7 @@ tmpId = sprintf('_csm_%d', round(rand()*1e6));
 tmpInput  = [tmpDir '/' tmpId '_input.mat'];
 tmpOutput = [tmpDir '/' tmpId '_output.mat'];
 
+% 如果报错，使用 -mat-binary 编译选项
 save('-mat7-binary', tmpInput, 'coords', 'lat', 'at_types', ...
      'R_val', 'N_val_arr', 'val_arr', 'goodBonds');
 
