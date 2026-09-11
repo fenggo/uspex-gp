@@ -120,6 +120,7 @@ if POP_STRUC.generation > 1
         u_threshold = 0.04; % default
         top_k = 1;          % number of crystals to select per generation, default=1
         select_mode = 'ei'; % selection mode: ei, random, uncertainty
+        den_threshold = 0;  % min density for GP intervention, default=0 (always active)
         for ic = 1:length(ORG_STRUC.commandExecutable)
             cmd_str = ORG_STRUC.commandExecutable{ic};
             if ~isempty(strfind(cmd_str, 'uspexkit gp'))
@@ -157,6 +158,13 @@ if POP_STRUC.generation > 1
                     sp = find(rest == ' ', 1);
                     if isempty(sp), select_mode = rest;
                     else, select_mode = rest(1:sp-1); end
+                end
+                d2_pos = strfind(cmd_str, '--den=');
+                if ~isempty(d2_pos)
+                    rest = cmd_str(d2_pos+6:end);
+                    sp = find(rest == ' ', 1);
+                    if isempty(sp), den_threshold = str2num(rest);
+                    else, den_threshold = str2num(rest(1:sp-1)); end
                 end
                 break;
             end
@@ -197,6 +205,18 @@ if POP_STRUC.generation > 1
             if filtered_count > 0
                 fprintf('  Filtered out %d crystals with residual > 10\n', filtered_count);
             end
+
+            % Gate: skip GP if best density < den_threshold
+            if f_best < den_threshold
+                fprintf('  density threshold gate: f_best=%.4f < den=%.4f, skipping GP/DFT/pred\n', f_best, den_threshold);
+                valid_idx = [];  % prevent downstream code from running
+            end
+        end
+
+        if ~isempty(valid_idx) && exist(gp_file, 'file')
+            % Gate passed: data/idx_col/den_gp_col/uncert_col/resid_col already in scope
+
+            % ===== GPML active learning with EI top-K acquisition =====
 
             % Step 1: compute EI for all valid crystals, collect into arrays
             ei_list = [];
