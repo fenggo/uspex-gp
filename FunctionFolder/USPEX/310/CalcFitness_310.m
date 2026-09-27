@@ -394,3 +394,22 @@ if POP_STRUC.generation > 1
         end
     end
 end
+
+% ===== denevo: 每代 fitness 更新完成后绘制密度进化图 =====
+% 代数 > 5 只画最后 5 代, <= 5 画全部.
+% 在 resFolder (results*) 目录内执行, 绘图失败不影响 USPEX 主流程.
+try
+    cur_gen = POP_STRUC.generation;
+    if cur_gen > 5
+        den_cmd = sprintf('cd %s && uspexkit denevo --last 5', ORG_STRUC.resFolder);
+    else
+        den_cmd = sprintf('cd %s && uspexkit denevo', ORG_STRUC.resFolder);
+    end
+    fprintf('  Running: %s\n', den_cmd);
+    [den_status, den_out] = system(den_cmd);
+    if den_status ~= 0
+        fprintf('  denevo warning (exit %d): %s\n', den_status, den_out);
+    end
+catch
+    fprintf('  denevo failed (ignored): %s\n', lasterr);
+end
