@@ -35,6 +35,23 @@ ORG_STRUC.latVolume = mean(V);
 cd ..
 WriteIndividual(resFolder);
 
+% ===== denevo: 当代 Individuals 写入完成后绘制密度进化图 =====
+% >5 代画最后 5 代, <=5 画全部; 失败不影响主流程.
+try
+    if POP_STRUC.generation > 5
+        den_cmd = sprintf('cd %s && uspexkit denevo --last 5', resFolder);
+    else
+        den_cmd = sprintf('cd %s && uspexkit denevo', resFolder);
+    end
+    fprintf('  Running: %s\n', den_cmd);
+    [den_status, den_out] = system(den_cmd);
+    if den_status ~= 0
+        fprintf('  denevo warning (exit %d): %s\n', den_status, den_out);
+    end
+catch
+    fprintf('  denevo failed (ignored): %s\n', lasterr);
+end
+
 WriteBest(resFolder);
 WriteGeneration(resFolder);
 WriteProperties(ORG_STRUC.optType, resFolder);
