@@ -282,6 +282,14 @@ if POP_STRUC.generation > 1
             selected_den_gps = selected_den_gps(select_mask);
             selected_eis = selected_eis(select_mask);
 
+            % Only keep crystals whose GP-predicted density >= den_threshold:
+            % low-density candidates (density_gp < den) skip DFT entirely.
+            select_mask = selected_den_gps >= den_threshold;
+            selected_crystals = selected_crystals(select_mask);
+            selected_uncerts = selected_uncerts(select_mask);
+            selected_den_gps = selected_den_gps(select_mask);
+            selected_eis = selected_eis(select_mask);
+
             n_dft = length(selected_crystals);
             if n_dft > 0
                 fprintf('%s top-%d selection: %d/%d crystals above threshold (%.4f)\n', ...
