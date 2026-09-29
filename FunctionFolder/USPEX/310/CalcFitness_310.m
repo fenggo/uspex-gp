@@ -394,4 +394,3 @@ if POP_STRUC.generation > 1
         end
     end
 end
-
