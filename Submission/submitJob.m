@@ -14,16 +14,16 @@ if ORG_STRUC.abinitioCode(Step) == 0   % no optimization at all! (used in order 
     jobNumber = 0.02;
 elseif ORG_STRUC.platform == 0 %nonParallel
     jobNumber=100;
-    %if strfind(ORG_STRUC.commandExecutable{Step},'gulp')
-    %   [a,b] = unix(['mv input_orderd inp_' num2str(POP_STRUC.generation) '_' num2str(Ind_No) '_' num2str(Step)]);
-    %end
+    if strfind(ORG_STRUC.commandExecutable{Step},'gulp')
+       [a,b] = unix(['mv input_orderd inp_' num2str(POP_STRUC.generation) '_' num2str(Ind_No) '_' num2str(Step)]);
+    end
     if strfind(ORG_STRUC.commandExecutable{Step},'mlflow') && strfind(howCome,'Random')
        [a,b]=unix([ORG_STRUC.commandExecutable{Step} ' --o=1']);
     elseif strfind(ORG_STRUC.commandExecutable{Step},'gpcsp') 
        [a,b]=unix([ORG_STRUC.commandExecutable{Step}  ' --r=' POP_STRUC.resFolder]); %%' --i=' num2str(count)
     elseif strfind(ORG_STRUC.commandExecutable{Step},'uspexkit gp')
        % 直接把当前结构的全局编号 bodyCount+1 下发给 Python，无需读 Individuals 文件
-       [a,b]=unix([ORG_STRUC.commandExecutable{Step}  ' --id=' num2str(POP_STRUC.bodyCount + 1)]);    
+       [a,b]=unix([ORG_STRUC.commandExecutable{Step}  ' --id=' num2str(POP_STRUC.bodyCount + 1) ' --optype=' num2str(ORG_STRUC.optType)]);
     else
        [a,b]=unix(ORG_STRUC.commandExecutable{Step});
     end
