@@ -42,6 +42,36 @@ AutoFrac = python_uspex(getPy, ['-f ' inputFile ' -b AutoFrac -c 1']);
 if ~isempty(AutoFrac)
 ORG_STRUC.AutoFrac = str2num(AutoFrac);
 end
+% --- RL operator-bandit parsing ---
+RL_strategy = python_uspex(getPy, ['-f ' inputFile ' -b RL_strategy -c 1']);
+if ~isempty(RL_strategy)
+ORG_STRUC.RL_strategy = str2num(RL_strategy);
+end
+RL_forget = python_uspex(getPy, ['-f ' inputFile ' -b RL_forget -c 1']);
+if ~isempty(RL_forget)
+ORG_STRUC.RL_forget = str2num(RL_forget);
+end
+RL_w1 = python_uspex(getPy, ['-f ' inputFile ' -b RL_w1 -c 1']);
+if ~isempty(RL_w1)
+ORG_STRUC.RL_w1 = str2num(RL_w1);
+end
+RL_w2 = python_uspex(getPy, ['-f ' inputFile ' -b RL_w2 -c 1']);
+if ~isempty(RL_w2)
+ORG_STRUC.RL_w2 = str2num(RL_w2);
+end
+RL_armCap = python_uspex(getPy, ['-f ' inputFile ' -b RL_armCap -c 1']);
+if ~isempty(RL_armCap)
+ORG_STRUC.RL_armCap = str2num(RL_armCap);
+end
+RL_kappa = python_uspex(getPy, ['-f ' inputFile ' -b RL_kappa -c 1']);
+if ~isempty(RL_kappa)
+ORG_STRUC.RL_kappa = str2num(RL_kappa);
+end
+RL_autoExport = python_uspex(getPy, ['-f ' inputFile ' -b RL_autoExport -c 1']);
+if ~isempty(RL_autoExport)
+ORG_STRUC.RL_autoExport = str2num(RL_autoExport);
+end
+% --- end RL parsing ---
 fracGene = python_uspex(getPy, ['-f ' inputFile ' -b fracGene -c 1']);
 if ~isempty(fracGene)
 ORG_STRUC.fracGene = str2num(fracGene);

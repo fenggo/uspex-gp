@@ -86,6 +86,18 @@ ORG_STRUC.numParents = 2;
 ORG_STRUC.minSlice = 2;
 ORG_STRUC.maxSlice = 8;
 ORG_STRUC.AutoFrac = 0;
+% --- RL operator-bandit (L2) defaults ---
+ORG_STRUC.RL_strategy    = 0;     % 0=off, 1=L1, 2=L2
+ORG_STRUC.RL_forget      = 0.9;   % forgetting factor lambda
+ORG_STRUC.RL_w1          = 1.0;   % reward weight: elite membership
+ORG_STRUC.RL_w2          = 0.5;   % reward weight: enthalpy gain over parents
+ORG_STRUC.RL_armCap      = 0.6;   % single-arm fraction cap
+ORG_STRUC.RL_kappa       = 1.0;   % continuous-TS exploration scale
+ORG_STRUC.RL_autoExport  = 1;     % export posterior at finish (default on)
+ORG_STRUC.rotationAngleMax = pi/2;  % promoted from Rotation_310 hardcode
+ORG_STRUC.translationMax   = 0.5;   % promoted from Rotation_310 hardcode
+ORG_STRUC.softStepScale    = 1.0;   % softmode step-length multiplier
+% --- end RL defaults ---
 ORG_STRUC.fracGene = 0.5;
 ORG_STRUC.fracRand = 0.2;
 ORG_STRUC.fracAtomsMut = 0.1;

@@ -11,9 +11,32 @@ if N_pro == 0
 N_pro = 1;
 end
 howManyProliferate = min( [N_pro,length(POP_STRUC.ranking)-POP_STRUC.bad_rank ] );
-if ~ORG_STRUC.AutoFrac
+if ORG_STRUC.RL_strategy >= 1
+isRL = 1;
+% --- RL operator-bandit (L1/L2): compute fractions, then fall through to shared
+% tournament/log/save section below. ---
+pop0 = ORG_STRUC.populationSize;
+RLf = RL_agent(pop0);                 % 1x6: [Gene Rand Perm Rot Lat Soft]
+RLmap_frac = {'fracGene','fracRand','fracPerm','fracRotMut','fracLatMut','fracAtomsMut'};
+RLmap_n    = {'howManyOffsprings','howManyRand','howManyPermutations', ...
+              'howManyRotations','howManyMutations','howManyAtomMutations'};
+RLf = RLf / sum(RLf);
+for i = 1:6
+   eval(['ORG_STRUC.' RLmap_frac{i} ' = RLf(i);']);
+   eval(['ORG_STRUC.' RLmap_n{i}    ' = round(pop0*RLf(i));']);
+end
+diffN = pop0 - sum(round(pop0*RLf)); % absorb integer-rounding gap into largest arm
+[~, imax] = max(RLf);
+eval(['ORG_STRUC.' RLmap_n{imax} ' = ORG_STRUC.' RLmap_n{imax} ' + diffN;']);
+ORG_STRUC.fracTrans = 0; ORG_STRUC.howManyTrans = 0;
+numOperation = 0; %# AutoFrac-only mix block below is skipped for RL
+% --- end RL fractions ---
+elseif ~ORG_STRUC.AutoFrac
+isRL = 0;
 update_STUFF_old(inputFile, goodFrac, ranking);
+numOperation = 7;
 else
+isRL = 0;
 Parent    = {'Random',    'Heredity', 'Permutate', 'TransMutate', ...
 'LatMutate', 'softmutate', 'Rotate'};
 fractions = {'fracRand', 'fracGene', 'fracPerm', 'fracTrans',...
@@ -84,6 +107,7 @@ end
 end
 f = N(3,:)/sum(N(3,:));
 end
+if ~isRL
 for i = 1:numOperation
 eval([ 'f(1,i) = 0.55 * ORG_STRUC.' fractions{i} '+ 0.45 * f(1,i);' ]);
 end

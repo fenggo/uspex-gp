@@ -75,7 +75,7 @@ if non_zero > 0
                 vec(3) = eigvector((index-1)*3+3, IX(f));
                 vecnorm(index) = norm(vec);
             end
-            normfac = max(vecnorm(1:N)) / ORG_STRUC.howManyMut;
+            normfac = max(vecnorm(1:N)) / (ORG_STRUC.howManyMut * ORG_STRUC.softStepScale);
 
             % 尝试不同幅度 (0..10, 正负方向)
             for i = 0 : 10

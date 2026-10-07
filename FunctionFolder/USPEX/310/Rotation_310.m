@@ -9,8 +9,8 @@ global OFF_STRUC
 % === 参数配置 ===
 maxAttempts = 50;           % 减少最大尝试次数（原50→25）
 maxDihedralIter = 200;      % RotInertia 二面角循环上限
-rotationAngleMax = pi/2;    % 最大旋转角从 π/2 降到 π/6 (30°)
-translationMax = 0.5;       % 最大平移从 0.5 降到 0.3 Å
+rotationAngleMax = ORG_STRUC.rotationAngleMax;   % RL-adjustable (default pi/2)
+translationMax = ORG_STRUC.translationMax;       % RL-adjustable (default 0.5)
 
 goodMutant = 0;
 count = 1;
