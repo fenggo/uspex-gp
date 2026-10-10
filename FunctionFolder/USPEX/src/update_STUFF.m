@@ -124,6 +124,7 @@ eval( ['ORG_STRUC.' fractions{i} '= f(1,i);'] );
 eval( ['ORG_STRUC.' howMany{i} '= round(pop*f(1,i));'] );
 end
 end
+end
 ORG_STRUC.tournament = zeros(howManyProliferate,1);
 ORG_STRUC.tournament(howManyProliferate) = 1;
 for loop = 2:howManyProliferate
