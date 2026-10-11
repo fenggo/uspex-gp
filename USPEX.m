@@ -9,7 +9,7 @@ else
      [nothing, nothing] = unix('chmod +x FunctionFolder/Tool/*');
      [nothing, nothing] = unix('chmod +x FunctionFolder/spacegroup/random_2d');
      [nothing, nothing] = unix('chmod +x FunctionFolder/spacegroup/random_cell');
-     [nothing, nothing] = unix('chmod +x FunctionFolder/spacegroup/random_cell_mol');
+     [nothing, nothing] = unix('chmod +x FunctionFolder/spacegroup/random_cell_mol.py');
      [nothing, nothing] = unix('chmod +x FunctionFolder/spacegroup/findsym_new');
      [nothing, nothing] = unix('chmod +x clean');
      [nothing, nothing] = unix('rm  Specific/get*');

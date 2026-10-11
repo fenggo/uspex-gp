@@ -89,7 +89,7 @@ if ORG_STRUC.fixRndSeed>0
 end
 fclose(fp);
 
-[a, b] = unix([spgBINDIR '/random_cell_mol < rc.in > rc.out']);
+[a, b] = unix(['python ' spgBINDIR '/random_cell_mol.py < rc.in > rc.out']);
 [a, b] = unix(['grep NUMBER rc.out |wc -l']);
 
 sites = str2num(b);
