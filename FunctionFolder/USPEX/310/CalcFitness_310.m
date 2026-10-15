@@ -35,15 +35,18 @@ for i = 1:length(POP_STRUC.POPULATION)
        elseif ORG_STRUC.optType == 11                         %%%%%  density
           volume = det(POP_STRUC.POPULATION(i).LATTICE);
           density =  calcDensity( POP_STRUC.POPULATION(i).numIons, ORG_STRUC.atomType,volume);
+          density = use_gp_density(POP_STRUC.POPULATION(i), density);
           fitness(i) = -1*density;
        elseif ORG_STRUC.optType == 12                         %%%%%  density combined with entropy
           volume  = det(POP_STRUC.POPULATION(i).LATTICE);
           density =  calcDensity( POP_STRUC.POPULATION(i).numIons, ORG_STRUC.atomType,volume);
+          density = use_gp_density(POP_STRUC.POPULATION(i), density);
           factor  = (POP_STRUC.POPULATION(i).numMols/ORG_STRUC.numMols)*sum(ORG_STRUC.numMols);
           fitness(i) = POP_STRUC.POPULATION(i).Enthalpies(end)/factor - 0.5*density;
        elseif ORG_STRUC.optType == 13                         %%%%%  density combined with entropy
           volume  = det(POP_STRUC.POPULATION(i).LATTICE);
           density =  calcDensity( POP_STRUC.POPULATION(i).numIons, ORG_STRUC.atomType,volume);
+          density = use_gp_density(POP_STRUC.POPULATION(i), density);
           factor  = (POP_STRUC.POPULATION(i).numMols/ORG_STRUC.numMols)*sum(ORG_STRUC.numMols);
           fitness(i) = POP_STRUC.POPULATION(i).Enthalpies(end)/factor - density;
        elseif (ORG_STRUC.optType > 1100) & (ORG_STRUC.optType < 1112)  
