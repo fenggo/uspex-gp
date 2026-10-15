@@ -43,12 +43,15 @@ for i = 1:length(POP_STRUC.POPULATION)
           density = use_gp_density(POP_STRUC.POPULATION(i), density);
           factor  = (POP_STRUC.POPULATION(i).numMols/ORG_STRUC.numMols)*sum(ORG_STRUC.numMols);
           fitness(i) = POP_STRUC.POPULATION(i).Enthalpies(end)/factor - 0.5*density;
-       elseif ORG_STRUC.optType == 13                         %%%%%  density combined with entropy
-          volume  = det(POP_STRUC.POPULATION(i).LATTICE);
-          density =  calcDensity( POP_STRUC.POPULATION(i).numIons, ORG_STRUC.atomType,volume);
-          density = use_gp_density(POP_STRUC.POPULATION(i), density);
-          factor  = (POP_STRUC.POPULATION(i).numMols/ORG_STRUC.numMols)*sum(ORG_STRUC.numMols);
-          fitness(i) = POP_STRUC.POPULATION(i).Enthalpies(end)/factor - density;
+       elseif ORG_STRUC.optType == 13                         %%%%%  distance (Hilbert-space distance to dataset)
+          if isfield(POP_STRUC.POPULATION(i), 'distance') && ...
+             ~isempty(POP_STRUC.POPULATION(i).distance) && ...
+             isnumeric(POP_STRUC.POPULATION(i).distance) && ...
+             ~isnan(POP_STRUC.POPULATION(i).distance)
+             fitness(i) = POP_STRUC.POPULATION(i).distance;
+          else
+             fitness(i) = NaN;   % distance unavailable
+          end
        elseif (ORG_STRUC.optType > 1100) & (ORG_STRUC.optType < 1112)  
           whichPara= mod(ORG_STRUC.optType,110);
           for i = 1 : length(POP_STRUC.POPULATION)
