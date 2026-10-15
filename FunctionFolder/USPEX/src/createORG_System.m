@@ -50,8 +50,10 @@ if ~isempty(optType)
         ORG_STRUC.optType = 10;
       elseif strcmpi(optType, 'density')
         ORG_STRUC.optType = 11;
-      elseif strcmpi(optType, 'den_ent')
+      elseif strcmpi(optType, 'den&ent')
         ORG_STRUC.optType = 12;
+      elseif strcmpi(optType, 'distance')
+        ORG_STRUC.optType = 13;
       elseif strcmpi(optType, 'powerfactor')
         ORG_STRUC.optType = 14;
       end
