@@ -42,12 +42,14 @@ for indic = 1:ORG_STRUC.numParallelCalcs
                         gpFile = 'gp.csv';
                         POP_STRUC.POPULATION(whichInd).density_gp = NaN;
                         POP_STRUC.POPULATION(whichInd).uq         = NaN;
+                        POP_STRUC.POPULATION(whichInd).distance   = NaN;
                         if exist(gpFile, 'file')
                             gpData = csvread(gpFile, 1, 0);   % skip header row
                             if ~isempty(gpData)
                                 bc = POP_STRUC.POPULATION(whichInd).Number;
                                 rowIdx = find(gpData(:,2) == bc, 1, 'last');
                                 if ~isempty(rowIdx) && size(gpData,2) >= 7
+                                    POP_STRUC.POPULATION(whichInd).distance   = gpData(rowIdx,3);
                                     POP_STRUC.POPULATION(whichInd).density_gp = gpData(rowIdx,6);
                                     POP_STRUC.POPULATION(whichInd).uq         = gpData(rowIdx,7);
                                 end
@@ -57,6 +59,7 @@ for indic = 1:ORG_STRUC.numParallelCalcs
                         % never break the read-back flow on a malformed/missing gp.csv
                         POP_STRUC.POPULATION(whichInd).density_gp = NaN;
                         POP_STRUC.POPULATION(whichInd).uq         = NaN;
+                        POP_STRUC.POPULATION(whichInd).distance   = NaN;
                     end
                     % --- end GP density read ---
                     LATTICE     = POP_STRUC.POPULATION(whichInd).LATTICE;
