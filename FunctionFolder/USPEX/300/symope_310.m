@@ -81,7 +81,7 @@ if ORG_STRUC.fixRndSeed>0
 fprintf(fp, '%10d %10d ! RandSeeds \n', round(rand(1,2)*10^6));
 end
 fclose(fp);
-[a, b] = unix([spgBINDIR '/random_cell_mol < rc.in > rc.out']);
+[a, b] = unix(['python3 ' spgBINDIR '/random_cell_mol.py < rc.in > rc.out']);
 [a, b]=unix(['grep NUMBER rc.out |wc -l']);
 sites = str2num(b);
 candidate = zeros(sum(numIons),3);
