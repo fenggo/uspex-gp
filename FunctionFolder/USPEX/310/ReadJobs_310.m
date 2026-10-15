@@ -35,6 +35,30 @@ for indic = 1:ORG_STRUC.numParallelCalcs
                     POP_STRUC.POPULATION(whichInd).ToDo = 0;
                     POP_STRUC.bodyCount = POP_STRUC.bodyCount + 1;
                     POP_STRUC.POPULATION(whichInd).Number = POP_STRUC.bodyCount;
+                    % --- GP-predicted density & uncertainty from gp.csv (best-effort) ---
+                    % gp.csv: col2=bodyCount(index), col6=density_gp, col7=uncertainty.
+                    % Read if present and this body's row exists; otherwise leave untouched.
+                    try
+                        gpFile = 'gp.csv';
+                        POP_STRUC.POPULATION(whichInd).density_gp = NaN;
+                        POP_STRUC.POPULATION(whichInd).uq         = NaN;
+                        if exist(gpFile, 'file')
+                            gpData = csvread(gpFile, 1, 0);   % skip header row
+                            if ~isempty(gpData)
+                                bc = POP_STRUC.POPULATION(whichInd).Number;
+                                rowIdx = find(gpData(:,2) == bc, 1, 'last');
+                                if ~isempty(rowIdx) && size(gpData,2) >= 7
+                                    POP_STRUC.POPULATION(whichInd).density_gp = gpData(rowIdx,6);
+                                    POP_STRUC.POPULATION(whichInd).uq         = gpData(rowIdx,7);
+                                end
+                            end
+                        end
+                    catch
+                        % never break the read-back flow on a malformed/missing gp.csv
+                        POP_STRUC.POPULATION(whichInd).density_gp = NaN;
+                        POP_STRUC.POPULATION(whichInd).uq         = NaN;
+                    end
+                    % --- end GP density read ---
                     LATTICE     = POP_STRUC.POPULATION(whichInd).LATTICE;
                     COORDINATES = POP_STRUC.POPULATION(whichInd).COORDINATES;
                     numIons =     POP_STRUC.POPULATION(whichInd).numIons;
