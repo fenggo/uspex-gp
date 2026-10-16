@@ -38,12 +38,24 @@ for indic = 1:ORG_STRUC.numParallelCalcs
                     % --- GP-predicted density & uncertainty from gp.csv (best-effort) ---
                     % gp.csv: col1=bodyCount(id), col2=nearest-neighbour index,
                     % col3=residual(distance), col6=density_gp, col7=uncertainty.
-                    % Read if present and this body's row exists; otherwise leave NaN.
+                    % Read if this body's row exists; otherwise KEEP inherited value
+                    % (keptBest inherits from its parent struct copy, like density/enthalpy).
                     try
                         gpFile = [ORG_STRUC.homePath '/CalcFold1/gp.csv'];
-                        POP_STRUC.POPULATION(whichInd).density_gp = NaN;
-                        POP_STRUC.POPULATION(whichInd).uq         = NaN;
-                        POP_STRUC.POPULATION(whichInd).distance   = NaN;
+                        % keptBest 晶体是父代的整体 struct 拷贝, 已携带
+                        % density_gp/uq/distance。它们不重新走 uspexkit gp,
+                        % gp.csv 中无其条目。因此: 字段不存在才初始化为 NaN;
+                        % 读不到匹配行时保留已继承的值(与 density/enthalpy
+                        % 一样不重算), 而不是覆盖成 NaN。
+                        if ~isfield(POP_STRUC.POPULATION(whichInd), 'density_gp')
+                            POP_STRUC.POPULATION(whichInd).density_gp = NaN;
+                        end
+                        if ~isfield(POP_STRUC.POPULATION(whichInd), 'uq')
+                            POP_STRUC.POPULATION(whichInd).uq = NaN;
+                        end
+                        if ~isfield(POP_STRUC.POPULATION(whichInd), 'distance')
+                            POP_STRUC.POPULATION(whichInd).distance = NaN;
+                        end
                         if exist(gpFile, 'file')
                             gpData = csvread(gpFile, 1, 0);   % skip header row
                             if ~isempty(gpData)
@@ -57,10 +69,8 @@ for indic = 1:ORG_STRUC.numParallelCalcs
                             end
                         end
                     catch
-                        % never break the read-back flow on a malformed/missing gp.csv
-                        POP_STRUC.POPULATION(whichInd).density_gp = NaN;
-                        POP_STRUC.POPULATION(whichInd).uq         = NaN;
-                        POP_STRUC.POPULATION(whichInd).distance   = NaN;
+                        % never break the read-back flow on a malformed/missing gp.csv;
+                        % 保留已继承的字段值, 不覆盖
                     end
                     % --- end GP density read ---
                     LATTICE     = POP_STRUC.POPULATION(whichInd).LATTICE;
