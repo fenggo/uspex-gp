@@ -36,10 +36,11 @@ for indic = 1:ORG_STRUC.numParallelCalcs
                     POP_STRUC.bodyCount = POP_STRUC.bodyCount + 1;
                     POP_STRUC.POPULATION(whichInd).Number = POP_STRUC.bodyCount;
                     % --- GP-predicted density & uncertainty from gp.csv (best-effort) ---
-                    % gp.csv: col2=bodyCount(index), col6=density_gp, col7=uncertainty.
-                    % Read if present and this body's row exists; otherwise leave untouched.
+                    % gp.csv: col1=bodyCount(id), col2=nearest-neighbour index,
+                    % col3=residual(distance), col6=density_gp, col7=uncertainty.
+                    % Read if present and this body's row exists; otherwise leave NaN.
                     try
-                        gpFile = 'gp.csv';
+                        gpFile = [ORG_STRUC.homePath '/CalcFold1/gp.csv'];
                         POP_STRUC.POPULATION(whichInd).density_gp = NaN;
                         POP_STRUC.POPULATION(whichInd).uq         = NaN;
                         POP_STRUC.POPULATION(whichInd).distance   = NaN;
@@ -47,7 +48,7 @@ for indic = 1:ORG_STRUC.numParallelCalcs
                             gpData = csvread(gpFile, 1, 0);   % skip header row
                             if ~isempty(gpData)
                                 bc = POP_STRUC.POPULATION(whichInd).Number;
-                                rowIdx = find(gpData(:,2) == bc, 1, 'last');
+                                rowIdx = find(gpData(:,1) == bc, 1, 'last');
                                 if ~isempty(rowIdx) && size(gpData,2) >= 7
                                     POP_STRUC.POPULATION(whichInd).distance   = gpData(rowIdx,3);
                                     POP_STRUC.POPULATION(whichInd).density_gp = gpData(rowIdx,6);
