@@ -306,6 +306,18 @@ if POP_STRUC.generation > 1
                         selected_den_gps(s), selected_uncerts(s), f_best);
                 end
 
+                % --- log EI-selected crystal IDs per generation to ei.log (for plotting) ---
+                try
+                    ei_file = [ORG_STRUC.homePath '/ei.log'];
+                    eid = fopen(ei_file, 'a+');
+                    if eid ~= -1
+                        fprintf(eid, 'gen %d:%s\n', POP_STRUC.generation, ...
+                                num2str(selected_crystals(:)'));
+                        fclose(eid);
+                    end
+                catch
+                end
+
                 % Step 3: generate trajectory (once for all)
                 cmd = ['cd ' ORG_STRUC.resFolder ' && uspexkit traj'];
                 fprintf('  Running: %s\n', cmd);
